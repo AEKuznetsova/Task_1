@@ -1,18 +1,62 @@
 package praktikum;
 
+import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+@RunWith(Parameterized.class)
 public class IngredientTypeTests {
 
-    @Test
-    public void sauceTest() {
-        assertEquals("Тип ингредиента не SAUCE", "SAUCE", IngredientType.SAUCE.toString());
+    private final IngredientType ingredientType;
+    private final String expectedTypeInReceipt;
+
+    private Burger burger;
+
+    @Mock
+    private Bun mockBun;
+
+    @Mock
+    private Ingredient mockIngredient;
+
+    public IngredientTypeTests(IngredientType ingredientType, String expectedTypeInReceipt) {
+        this.ingredientType = ingredientType;
+        this.expectedTypeInReceipt = expectedTypeInReceipt;
+    }
+
+    @Parameterized.Parameters(name = "IngredientType[type={0}, receiptValue={1}]")
+    public static Object[][] getData() {
+        return new Object[][] {
+                {IngredientType.SAUCE, "sauce"},
+                {IngredientType.FILLING, "filling"}
+        };
+    }
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        burger = new Burger();
+
+        when(mockBun.getName()).thenReturn("black bun");
+        when(mockBun.getPrice()).thenReturn(100f);
+        when(mockIngredient.getType()).thenReturn(ingredientType);
+        when(mockIngredient.getName()).thenReturn("hot sauce");
+        when(mockIngredient.getPrice()).thenReturn(50f);
     }
 
     @Test
-    public void fillingTest() {
-        assertEquals("Тип ингредиента не FILLING", "FILLING", IngredientType.FILLING.toString());
+    public void receiptContainsIngredientTypeTest() {
+        burger.setBuns(mockBun);
+        burger.addIngredient(mockIngredient);
+
+        String receipt = burger.getReceipt();
+
+        assertTrue("В чеке должен отображаться тип ингредиента " + expectedTypeInReceipt,
+                receipt.contains(expectedTypeInReceipt));
     }
 }
-
